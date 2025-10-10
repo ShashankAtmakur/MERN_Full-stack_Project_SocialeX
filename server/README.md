@@ -45,3 +45,4 @@ Debugging suggestions:
 - Add environment configuration (use `.env` with `dotenv`).
 - Add tests for auth endpoints.
 - Add a Postman collection or small test script for quickly reproducing registration/login flows.
+
