@@ -29,6 +29,29 @@ npm install
 
 ## Useful files
 - `src/context/AuthenticationContextProvider.jsx` — handles login/register and localStorage.
+
+## .env and Firebase (optional)
+
+This project includes Firebase for some client-side features (see `src/firebase.js`). If you want to use Firebase locally, create a `.env` file in the `client/` directory and add your Firebase config keys prefixed with `REACT_APP_` so Create React App will expose them to the client build.
+
+Example `.env` (do not commit to source control):
+
+```
+REACT_APP_FIREBASE_API_KEY=your_api_key_here
+REACT_APP_FIREBASE_AUTH_DOMAIN=your-auth-domain
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+```
+
+How to create a Firebase project and get the config:
+1. Go to https://console.firebase.google.com/ and create a new project.
+2. Add a Web app to your project and Firebase will show you the config object.
+3. Copy the values into your `client/.env` using the `REACT_APP_` prefixes above.
+4. Restart the CRA dev server if it is running so it picks up the new env variables.
+
+Security note: never commit `.env` with API keys or secrets to a public repo. For production deployments prefer environment variables provided by your hosting platform.
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
