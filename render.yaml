@@ -18,8 +18,8 @@ services:
         sync: false
     healthCheckPath: /
 
-  # Frontend Static Site (static services must not include a region)
-  - type: static
+  # Frontend Static Site (declare as web with env: static; do NOT include region)
+  - type: web
     name: socialex-client
     env: static
     plan: free
