@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 
 export const AuthenticationContext = createContext();
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:6001';
+
 const AuthenticationContextProvider = ({children}) => {
 
   const [username, setUsername] = useState('');
@@ -23,7 +25,7 @@ const AuthenticationContextProvider = ({children}) => {
     try{
 
       const loginInputs = {email: email.trim().toLowerCase(), password: password}
-      const res = await axios.post('http://localhost:6001/login', loginInputs);
+      const res = await axios.post(`${API_URL}/login`, loginInputs);
       console.log('login response', res);
       localStorage.setItem('userToken', res.data.token);
       localStorage.setItem('userId', res.data.user._id);
@@ -45,7 +47,7 @@ const AuthenticationContextProvider = ({children}) => {
 
     try{
         const payload = { username: username, email: email.trim().toLowerCase(), password: password, profilePic };
-        const res = await axios.post('http://localhost:6001/register', payload);
+        const res = await axios.post(`${API_URL}/register`, payload);
         localStorage.setItem('userToken', res.data.token);
         localStorage.setItem('userId', res.data.user._id);
         localStorage.setItem('username', res.data.user.username);
