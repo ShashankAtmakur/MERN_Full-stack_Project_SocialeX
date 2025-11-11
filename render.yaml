@@ -18,11 +18,10 @@ services:
         sync: false
     healthCheckPath: /
 
-  # Frontend Static Site (declare as web with env: static; do NOT include region)
+  # Frontend Static Site (declare as web with env: static; DO NOT include region or a conflicting plan)
   - type: web
     name: socialex-client
     env: static
-    plan: free
     buildCommand: cd client && npm install && CI=false npm run build
     staticPublishPath: client/build
     envVars:
