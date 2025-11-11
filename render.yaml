@@ -11,21 +11,20 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 10000
+        value: "10000"
       - key: MONGO_URL
         sync: false
       - key: CLIENT_URL
         sync: false
     healthCheckPath: /
 
-  # Frontend Static Site
-  - type: web
+  # Frontend Static Site (static services must not include a region)
+  - type: static
     name: socialex-client
     env: static
-    region: oregon
     plan: free
     buildCommand: cd client && npm install && CI=false npm run build
-    staticPublishPath: ./client/build
+    staticPublishPath: client/build
     envVars:
       - key: REACT_APP_API_URL
         sync: false
@@ -33,10 +32,3 @@ services:
       - type: rewrite
         source: /*
         destination: /index.html
-
-# Database - MongoDB
-databases:
-  - name: socialex-db
-    databaseName: socialeX
-    user: socialeX_user
-    plan: free
