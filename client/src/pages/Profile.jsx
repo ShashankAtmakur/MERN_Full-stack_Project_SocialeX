@@ -12,6 +12,8 @@ import { GeneralContext } from '../context/GeneralContextProvider'
 import {useParams} from 'react-router-dom';
 import axios from 'axios';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:6001';
+
 const Profile = () => {
 
   const {logout} = useContext(AuthenticationContext);
@@ -58,7 +60,7 @@ const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:6001/fetchAllPosts');
+      const response = await axios.get(`${API_URL}/fetchAllPosts`);
       const fetchedPosts = response.data;
       setPosts(fetchedPosts);
     } catch (error) {

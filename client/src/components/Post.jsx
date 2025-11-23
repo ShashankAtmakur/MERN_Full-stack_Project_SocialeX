@@ -10,6 +10,8 @@ import axios from 'axios';
 import { GeneralContext } from '../context/GeneralContextProvider';
 import { useNavigate } from 'react-router-dom';
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:6001';
+
 const Post = () => {
 
     const navigate = useNavigate();
@@ -25,7 +27,7 @@ const Post = () => {
     
       const fetchPosts = async () => { 
         try {
-          const response = await axios.get('http://localhost:6001/fetchAllPosts');
+          const response = await axios.get(`${API_URL}/fetchAllPosts`);
           const fetchedPosts = response.data;
           setPosts(fetchedPosts);
         } catch (error) {

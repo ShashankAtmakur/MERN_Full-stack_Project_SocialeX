@@ -5,6 +5,8 @@ import { GeneralContext } from '../context/GeneralContextProvider';
 import axios from 'axios';
 import {RxCross2} from 'react-icons/rx'
 
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:6001';
+
 const Stories = () => {
 
     const {socket, isCreateStoryOpen, setIsCreateStoryOpen} = useContext(GeneralContext);
@@ -25,7 +27,7 @@ const Stories = () => {
       const fetchStories = async () => { 
         try {
           
-            const response = await axios.get('http://localhost:6001/fetchAllStories');
+            const response = await axios.get(`${API_URL}/fetchAllStories`);
             setStories(response.data)
             console.log(response.data[0])
         } catch (error) {
