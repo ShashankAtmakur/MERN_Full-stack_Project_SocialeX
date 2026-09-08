@@ -1,5 +1,4 @@
 import React, { useContext } from 'react'
-import {BiArrowBack} from 'react-icons/bi';
 import Input from './Input';
 import Messages from './Messages';
 import { GeneralContext } from '../../context/GeneralContextProvider';
@@ -11,7 +10,7 @@ const UserChat = () => {
   return (
     <div className='chat'>
       {
-        chatData.user &&
+        chatData.user && Object.keys(chatData.user).length > 0 &&
 
       
       <div className="chatInfo">
@@ -21,6 +20,7 @@ const UserChat = () => {
       </div>
 
     }
+    {!chatData.chatId && <div className="emptyChat">Select a friend to start chatting.</div>}
       <Messages />
 
       <Input />

@@ -18,15 +18,26 @@ const SocketHandler = (socket) => {
     })
 
     socket.on("fetch-profile", async({_id})=>{
-        const user = await User.findOne({_id})
-        console.log(user);
-        socket.emit("profile-fetched", {profile: user})
+      try {
+        const user = await User.findById(_id);
+        socket.emit("profile-fetched", {profile: user});
+      } catch (error) {
+        socket.emit('profile-error', {message: 'Unable to load profile'});
+      }
     })
 
     
     socket.on('updateProfile', async ({userId, profilePic, username, about})=>{
-        const user = await User.updateOne({_id: userId}, {profilePic: profilePic, username: username, about:about})
-        socket.emit("profile-fetched", {profile: user})
+      try {
+        const user = await User.findByIdAndUpdate(
+          userId,
+          {profilePic, username, about},
+          {new: true, runValidators: true}
+        );
+        socket.emit("profile-fetched", {profile: user});
+      } catch (error) {
+        socket.emit('profile-error', {message: 'Unable to update profile'});
+      }
     })
 
     socket.on('user-search', async({username})=>{

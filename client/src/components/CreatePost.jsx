@@ -6,6 +6,7 @@ import axios from "axios";
 import {ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import {storage} from '../firebase.js';
 import { v4 as uuidv4 } from 'uuid';
+import { API_URL } from '../config';
 
 
 const CreatePost = () => {
@@ -29,6 +30,8 @@ const CreatePost = () => {
 
     const handlePostUplload = async (e) =>{
         e.preventDefault();
+
+        if (!postFile) return;
         
         const storageRef = ref(storage, uuidv4());
 
@@ -47,7 +50,7 @@ const CreatePost = () => {
 
             try{
                 const inputs = {userId: localStorage.getItem('userId'), userName: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: postType, file: downloadURL, description: postDescription, location: postLocation, comments:{"New user": "This is my forst comment"}}
-                await axios.post('http://localhost:6001/createPost', inputs)
+                await axios.post(`${API_URL}/createPost`, inputs)
                 .then( async (res)=>{
                 }).catch((err) =>{
                     console.log(err);

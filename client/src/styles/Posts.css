@@ -10,6 +10,20 @@
     flex-direction: column;
     gap: 10px;
     padding: 0vh 0px 2vh 0px;
+    scrollbar-width: thin;
+}
+
+.feedStatus {
+    width: 100%;
+    padding: 2rem;
+    color: var(--gray);
+    text-align: center;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 1rem;
+}
+
+.feedStatus.error {
+    color: #b42318;
 }
 
 
@@ -213,5 +227,18 @@
 
     .genpost-linkdiv{
         margin-left: 7vw;
+    }
+}
+
+.commentsContainer .makeComment button:disabled,
+.input button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+}
+
+@media screen and (min-width: 501px) and (max-width: 900px){
+    .postsContainer {
+        left: 15vw;
+        width: 70vw;
     }
 }

@@ -4,7 +4,6 @@ import { GeneralContext } from '../../context/GeneralContextProvider'
 import {v4 as uuid} from 'uuid';
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { storage } from '../../firebase';
-import axios from 'axios';
 
 const Input = () => {
 
@@ -19,6 +18,8 @@ const Input = () => {
 
 
     const handleSend = async () =>{
+
+      if (!chatData.chatId || (!text.trim() && !file)) return;
 
       if (file){
 
@@ -62,14 +63,14 @@ const Input = () => {
 
   return (
     <div className='input' >
-      <input type="text" placeholder='type something...' onChange={e => setText(e.target.value)} value={text} />
+      <input type="text" placeholder='Type a message...' onChange={e => setText(e.target.value)} value={text} onKeyDown={e => e.key === 'Enter' && handleSend()} disabled={!chatData.chatId} />
       <div className="send">
         <input type="file" style={{display : 'none'}} id='file' onChange={e=> setFile(e.target.files[0])} />
         <label htmlFor="file" style={{display:'flex'}}>
           <BiImageAdd />
           <p style={{fontSize: '12px'}}>{uploadProgress ? Math.floor(uploadProgress) + '%' : ''}</p>
         </label>
-        <button onClick={handleSend} >Send</button>
+        <button onClick={handleSend} disabled={!chatData.chatId || (!text.trim() && !file)} >Send</button>
       </div>
     </div>
   )

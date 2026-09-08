@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from 'react'
+import React, { useContext, useEffect } from 'react'
 import {GeneralContext} from '../../context/GeneralContextProvider';
 const Chats = () => {
 
@@ -12,11 +12,13 @@ const Chats = () => {
 
     socket.emit('fetch-friends', {userId});
 
-    socket.on("friends-data-fetched", ({friendsData})=>{
+    const handleFriendsFetched = ({friendsData}) => {
       setChatFriends(friendsData);
-    });
+    };
+    socket.on("friends-data-fetched", handleFriendsFetched);
 
-  },[])
+    return () => socket.off('friends-data-fetched', handleFriendsFetched);
+  },[setChatFriends, socket, userId])
 
   
   const handleSelect = (data) =>{
@@ -27,11 +29,11 @@ const Chats = () => {
   }
   useEffect(()=>{
 
-    if(chatData.chatId !== null){
+    if(chatData.chatId){
       socket.emit('fetch-messages', {chatId: chatData.chatId})
       
     }
-  }, [chatData])
+  }, [chatData, socket])
 
 
 

@@ -1,3 +1,12 @@
+.profileStatus {
+    margin: 25vh auto 0;
+    width: min(90%, 36rem);
+    padding: 2rem;
+    text-align: center;
+    color: var(--gray);
+    background: rgba(255, 255, 255, 0.75);
+    border-radius: 1rem;
+}
 .profilePage{
     height: 100vh;
     width: 100%;

@@ -1,3 +1,10 @@
+.emptyChat {
+    display: grid;
+    place-items: center;
+    flex: 1;
+    color: var(--gray);
+    font-family: 'Work Sans', sans-serif;
+}
 .chatPage{
     height: 100vh;
 }

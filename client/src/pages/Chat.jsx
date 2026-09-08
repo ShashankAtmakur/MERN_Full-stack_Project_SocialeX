@@ -1,6 +1,5 @@
 import React from 'react'
 import '../styles/Chat.css'
-import HomeLogo from '../components/HomeLogo'
 import Navbar from '../components/Navbar'
 import Sidebar from '../components/chat/Sidebar'
 import UserChat from '../components/chat/UserChat'

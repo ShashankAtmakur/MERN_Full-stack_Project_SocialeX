@@ -1,13 +1,11 @@
-import React, { useContext, useEffect, useState } from 'react';
+import React, { useContext } from 'react';
 import "../styles/Navbar.css";
 import { BiHomeAlt } from "react-icons/bi";
 import { BsChatSquareText } from "react-icons/bs";
 import { CgAddR } from "react-icons/cg";
 import { TbNotification } from "react-icons/tb";
-import navProfile from '../images/nav-profile.avif';
 import { GeneralContext } from '../context/GeneralContextProvider';
 import { useNavigate } from 'react-router-dom';
-import axios from 'axios';
 
 const Navbar = () => {
 

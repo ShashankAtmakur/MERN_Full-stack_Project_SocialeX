@@ -1,12 +1,11 @@
 import React, { createContext, useReducer, useState } from 'react'
 import socketIoClient from 'socket.io-client';
+import { SOCKET_URL } from '../config';
 
 export const GeneralContext = createContext();
 
 
-const WS = 'http://localhost:6001';
-
-const socket = socketIoClient(WS);
+const socket = socketIoClient(SOCKET_URL, { autoConnect: true });
 
 export const GeneralContextProvider = ({children}) => {
 
@@ -21,7 +20,7 @@ export const GeneralContextProvider = ({children}) => {
    
 
     const INITIAL_STATE = {
-      chatId: 'null',
+    chatId: null,
       user: {},
   };
 

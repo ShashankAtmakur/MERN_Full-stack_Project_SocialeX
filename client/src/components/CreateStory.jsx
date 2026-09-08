@@ -26,6 +26,8 @@ const CreateStory = () => {
 
     const handleStoryUpload = async (e) =>{
         e.preventDefault();
+
+        if (!storyFile) return;
         
         const storageRef = ref(storage, uuidv4());
 

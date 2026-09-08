@@ -1,14 +1,12 @@
 import React, { useContext, useEffect, useState } from 'react';
 import '../styles/Posts.css';
 import { AiOutlineHeart, AiTwotoneHeart } from "react-icons/ai";
-import { BiCommentDetail } from "react-icons/bi";
-import { FiSend } from "react-icons/fi";
 import { FaGlobeAmericas } from "react-icons/fa";
 import {IoIosPersonAdd} from 'react-icons/io'
-import postImg from '../images/nav-profile.avif';
 import axios from 'axios';
 import { GeneralContext } from '../context/GeneralContextProvider';
 import { useNavigate } from 'react-router-dom';
+import { API_URL } from '../config';
 
 const Post = () => {
 
@@ -18,6 +16,8 @@ const Post = () => {
 
 
     const [posts, setPosts] = useState([]);
+    const [isLoading, setIsLoading] = useState(true);
+    const [error, setError] = useState('');
 
     useEffect(() => {
         fetchPosts();
@@ -25,11 +25,13 @@ const Post = () => {
     
       const fetchPosts = async () => { 
         try {
-          const response = await axios.get('http://localhost:6001/fetchAllPosts');
+                    const response = await axios.get(`${API_URL}/fetchAllPosts`);
           const fetchedPosts = response.data;
           setPosts(fetchedPosts);
-        } catch (error) {
-          console.error(error);
+                } catch (error) {
+                    setError('Unable to load posts right now.');
+                } finally {
+                    setIsLoading(false);
         }
       };
 
@@ -49,15 +51,19 @@ const Post = () => {
 
     
     useEffect(()=>{
-        socket.on("likeUpdated", ()=>{
-            // alert("likedd");
-        })
-
-        socket.on('userFollowed', ({following})=>{
+        const handleLikeUpdated = () => fetchPosts();
+        const handleUserFollowed = ({following})=>{
 
             localStorage.setItem('following', following);
-            
-        })
+            setPosts((currentPosts) => [...currentPosts]);
+        };
+        socket.on("likeUpdated", handleLikeUpdated);
+        socket.on('userFollowed', handleUserFollowed);
+
+        return () => {
+            socket.off('likeUpdated', handleLikeUpdated);
+            socket.off('userFollowed', handleUserFollowed);
+        };
 
     },[socket])
 
@@ -81,7 +87,7 @@ const Post = () => {
   return (
     <div className='postsContainer'>
 
-    {posts ? posts.map((post) => {
+    {isLoading ? <p className="feedStatus">Loading posts...</p> : error ? <p className="feedStatus error">{error}</p> : posts.length === 0 ? <p className="feedStatus">No posts yet. Share something with your community.</p> : posts.map((post) => {
 
         return(
 
@@ -93,7 +99,7 @@ const Post = () => {
                 <h3 className="usernameTop" onClick={()=> navigate(`/profile/${post.userId}`)}>{post.userName}</h3>
             </div>
 
-            {localStorage.getItem('following').includes(post.userId) || localStorage.getItem('userId') === post.userId ?
+            {(localStorage.getItem('following') || '').includes(post.userId) || localStorage.getItem('userId') === post.userId ?
             
             <></>
             :
@@ -162,10 +168,10 @@ const Post = () => {
             </div>
             <div className="commentsBody">
                 <div className="comments">
-                    {post.comments.map((comment)=>{
+                    {(post.comments || []).map((comment, index)=>{
                         return(
 
-                            <p><b>{comment[0]}</b> {comment[1]}</p>
+                            <p key={`${post._id}-comment-${index}`}><b>{comment[0]}</b> {comment[1]}</p>
                         )
                     })}
                 </div>
@@ -174,7 +180,7 @@ const Post = () => {
         </div>
         )
 
-    }) : <></>}
+    })}
 
     </div>
   )

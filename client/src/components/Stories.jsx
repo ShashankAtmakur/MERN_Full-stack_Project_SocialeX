@@ -4,15 +4,17 @@ import { BiPlusCircle } from 'react-icons/bi'
 import { GeneralContext } from '../context/GeneralContextProvider';
 import axios from 'axios';
 import {RxCross2} from 'react-icons/rx'
+import { API_URL } from '../config';
 
 const Stories = () => {
 
-    const {socket, isCreateStoryOpen, setIsCreateStoryOpen} = useContext(GeneralContext);
+    const {socket, setIsCreateStoryOpen} = useContext(GeneralContext);
 
     const [stories, setStories] = useState([])
     const [isStoryPlaying, setIsStoryPlaying] = useState(false);
 
     const [story, setStory] = useState();
+    const [isLoading, setIsLoading] = useState(true);
 
     const addStory = async () =>{
         setIsCreateStoryOpen(true)
@@ -25,11 +27,12 @@ const Stories = () => {
       const fetchStories = async () => { 
         try {
           
-            const response = await axios.get('http://localhost:6001/fetchAllStories');
+                        const response = await axios.get(`${API_URL}/fetchAllStories`);
             setStories(response.data)
-            console.log(response.data[0])
         } catch (error) {
           console.error(error);
+                } finally {
+                    setIsLoading(false);
         }
       };
 
@@ -59,9 +62,9 @@ const Stories = () => {
                 </div>
 
                 {
-                   stories && stories.filter(story => ((localStorage.getItem('following').includes(story.userId) || story.userId === localStorage.getItem('userId')) && (Math.abs(Math.round((new Date().getTime() - new Date(story.createdAt).getTime()) / (1000 * 60 * 60)))) < 24 )).map((story)=>(
+                   !isLoading && stories.filter(story => (((localStorage.getItem('following') || '').includes(story.userId) || story.userId === localStorage.getItem('userId')) && (Math.abs(Math.round((new Date().getTime() - new Date(story.createdAt).getTime()) / (1000 * 60 * 60)))) < 24 )).map((story)=>(
                         <div className="story user-story" key={story._id} onClick={()=> handleOpenStory(story)} style={story.viewers.includes(localStorage.getItem('userId')) ? {border: '3px solid #a5a7a995'} : {border: '3px solid #569bdfc9'} } >
-                            <img src={story.userPic} alt="" />
+                            <img src={story.userPic} alt={`${story.username}'s story`} />
                             <p>{story.username}</p>
                         </div>
                     ))

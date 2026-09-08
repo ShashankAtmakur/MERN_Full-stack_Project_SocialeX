@@ -1,16 +1,7 @@
-import { useEffect } from 'react';
+import { Navigate } from 'react-router-dom';
 
 const AuthProtector =  ({ children }) => {
-
-  useEffect(() => {
-
-    if (!localStorage.getItem('userToken')) {
-      window.location.href = '/landing';
-    }
-  }, [localStorage]);
-
-
-  return children;
+  return localStorage.getItem('userToken') ? children : <Navigate to="/landing" replace />;
 };
 
 export default AuthProtector;

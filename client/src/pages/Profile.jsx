@@ -4,13 +4,13 @@ import '../styles/Posts.css';
 import { AiOutlineHeart, AiTwotoneHeart } from "react-icons/ai";
 import { BiCommentDetail } from "react-icons/bi";
 import { FaGlobeAmericas } from "react-icons/fa";
-import {IoIosPersonAdd} from 'react-icons/io'
 import HomeLogo from '../components/HomeLogo'
 import Navbar from '../components/Navbar'
 import { AuthenticationContext } from '../context/AuthenticationContextProvider'
 import { GeneralContext } from '../context/GeneralContextProvider'
 import {useParams} from 'react-router-dom';
 import axios from 'axios';
+import { API_URL } from '../config';
 
 const Profile = () => {
 
@@ -21,7 +21,7 @@ const Profile = () => {
   const {id} = useParams();
   const userId = localStorage.getItem("userId");
 
-  const [userProfile, setUserProfile] = useState([]);
+  const [userProfile, setUserProfile] = useState(null);
 
 const [updateProfilePic, setUpdateProfilePic] = useState('');
 const [updateProfileUsername, setUpdateProfileUsername] = useState('');
@@ -34,15 +34,21 @@ const [isUpdating, setIsUpdating] = useState(false);
 
     socket.emit("fetch-profile", {_id: id});
 
-    socket.on("profile-fetched", async({profile})=>{
+    const handleProfileFetched = ({profile})=>{
+      if (!profile) return;
       setUserProfile(profile);
       setUpdateProfilePic(profile.profilePic);
       setUpdateProfileUsername(profile.username);
       setUpdateProfileAbout(profile.about);
-    })
+      if (profile._id === localStorage.getItem('userId')) {
+        localStorage.setItem('username', profile.username || '');
+        localStorage.setItem('profilePic', profile.profilePic || '');
+      }
+    };
 
-
-  },[socket])
+    socket.on("profile-fetched", handleProfileFetched);
+    return () => socket.off('profile-fetched', handleProfileFetched);
+  },[socket, id])
 
 
   const handleUpdate = async () =>{
@@ -58,7 +64,7 @@ const [isUpdating, setIsUpdating] = useState(false);
 
   const fetchPosts = async () => {
     try {
-      const response = await axios.get('http://localhost:6001/fetchAllPosts');
+      const response = await axios.get(`${API_URL}/fetchAllPosts`);
       const fetchedPosts = response.data;
       setPosts(fetchedPosts);
     } catch (error) {
@@ -84,18 +90,23 @@ const handleUnFollow = async (userId) =>{
 }
 
 useEffect(()=>{
-  socket.on('userFollowed', ({following})=>{
+  const handleUserFollowed = ({following})=>{
     localStorage.setItem('following', following);
-})
+  };
 
-socket.on('userUnFollowed', ({following})=>{
+  const handleUserUnFollowed = ({following})=>{
   localStorage.setItem('following', following);
-})
-})
+  };
+
+  socket.on('userFollowed', handleUserFollowed);
+  socket.on('userUnFollowed', handleUserUnFollowed);
+  return () => {
+    socket.off('userFollowed', handleUserFollowed);
+    socket.off('userUnFollowed', handleUserUnFollowed);
+  };
+}, [socket])
 
 
-
-const [followDisplayType, setFollowDisplayType] = useState('followers');
 
 const [comment, setComment] = useState('');
 
@@ -109,12 +120,12 @@ const handleDeletePost = async (postId) =>{
 }
 
 useEffect(()=>{
-
-  socket.on('post-deleted', async ({posts})=>{
-    
+  const handlePostDeleted = ({posts}) => {
     setPosts(posts)
-  })
+  };
 
+  socket.on('post-deleted', handlePostDeleted);
+  return () => socket.off('post-deleted', handlePostDeleted);
 },[socket])
 
 
@@ -123,9 +134,11 @@ useEffect(()=>{
       <HomeLogo />
       <Navbar />
 
+      {!userProfile ? <p className="profileStatus">Loading profile...</p> : <>
+
         <div className="profileCard" style={isUpdating ? {display:'none'}: {display:"flex"}}>
 
-            <img src={userProfile.profilePic} alt="" />
+            <img src={userProfile.profilePic} alt={`${userProfile.username}'s profile`} />
 
             <h4>{userProfile.username}</h4>
             <p>{userProfile.about} </p>
@@ -160,7 +173,7 @@ useEffect(()=>{
               <div className="profileControlBtns">
 
               {
-                localStorage.getItem('following').includes(userProfile._id) ?
+                (localStorage.getItem('following') || '').includes(userProfile._id) ?
                 <>
                 <button onClick={()=>handleUnFollow(userProfile._id)} style={{backgroundColor: 'rgb(224, 42, 42)'}}>Unfollow</button>
                 <button >Message</button>
@@ -178,18 +191,18 @@ useEffect(()=>{
         </div>
         
 
-        <div className='profileEditCard'style={!isUpdating ? {display:'none'}: {display:"flex"}}>
-          <div class="mb-3">
-            <label for="exampleInputEmail1" class="form-label">Profile Image</label>
-            <input type="text" class="form-control" id="exampleInputEmail1" onChange={(e)=> setUpdateProfilePic(e.target.value)} value={updateProfilePic} />
+          <div className='profileEditCard' style={!isUpdating ? {display:'none'}: {display:"flex"}}>
+          <div className="mb-3">
+            <label htmlFor="profileImage" className="form-label">Profile Image</label>
+            <input type="url" className="form-control" id="profileImage" onChange={(e)=> setUpdateProfilePic(e.target.value)} value={updateProfilePic} />
           </div>
-          <div class="mb-3">
-            <label for="exampleInputPassword1" class="form-label">Username</label>
-            <input type="text" class="form-control" id="exampleInputPassword1" onChange={(e)=> setUpdateProfileUsername(e.target.value)} value={updateProfileUsername}/>
+          <div className="mb-3">
+            <label htmlFor="profileUsername" className="form-label">Username</label>
+            <input type="text" className="form-control" id="profileUsername" onChange={(e)=> setUpdateProfileUsername(e.target.value)} value={updateProfileUsername}/>
           </div>
-          <div class="mb-3">
-            <label for="editAbout" class="form-label">About</label>
-            <input type="text" class="form-control" id="editAbout" onChange={(e)=> setUpdateProfileAbout(e.target.value)} value={updateProfileAbout}/>
+          <div className="mb-3">
+            <label htmlFor="editAbout" className="form-label">About</label>
+            <input type="text" className="form-control" id="editAbout" onChange={(e)=> setUpdateProfileAbout(e.target.value)} value={updateProfileAbout}/>
           </div>
           <button className='btn btn-primary' onClick={handleUpdate}>Update</button>
         </div>
@@ -235,7 +248,7 @@ useEffect(()=>{
                 <div className="supliconcol">
 
                     {
-                        post.likes.includes(localStorage.getItem('userId')) ?
+                        (post.likes || []).includes(localStorage.getItem('userId')) ?
 
                         <AiTwotoneHeart className='support reactbtn'  onClick={() => handleUnLike(localStorage.getItem('userId'), post._id)}/>
 
@@ -246,7 +259,7 @@ useEffect(()=>{
 
 
                     
-                    <label htmlFor="support" className='supportCount'>{post.likes.length}</label>
+                    <label htmlFor="support" className='supportCount'>{(post.likes || []).length}</label>
                 </div>
                 <BiCommentDetail className='comment reactbtn' />
                 {/* <FiSend className='share reactbtn' onClick={()=> {handleShare(post)}} /> */}
@@ -280,10 +293,10 @@ useEffect(()=>{
                 </div>
                 <div className="commentsBody">
                     <div className="comments">
-                        {post.comments.map((comment)=>{
+                        {(post.comments || []).map((comment, index)=>{
                             return(
 
-                                <p><b>{comment[0]}</b> {comment[1]}</p>
+                                <p key={`${post._id}-comment-${index}`}><b>{comment[0]}</b> {comment[1]}</p>
                             )
                         })}
                     </div>
@@ -329,8 +342,8 @@ useEffect(()=>{
               </div>
             </div> */}
 
-
-        </div>
+  </>}
+  </div>
   )
 }
 
