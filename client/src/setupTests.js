@@ -3,3 +3,10 @@
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
 import '@testing-library/jest-dom';
+import { TextDecoder, TextEncoder } from 'util';
+import { ReadableStream, TransformStream } from 'stream/web';
+
+global.TextDecoder = TextDecoder;
+global.TextEncoder = TextEncoder;
+global.ReadableStream = ReadableStream;
+global.TransformStream = TransformStream;
