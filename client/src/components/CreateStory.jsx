@@ -15,19 +15,18 @@ const CreateStory = () => {
     const [storyFile, setStoryFile] = useState(null);
  
     const [uploadProgress, setUploadProgress] = useState();
-
-    if (uploadProgress === 100){
-        setStoryDescription('');
-        setStoryFile(null);
-        setIsCreateStoryOpen(false);
-        setUploadProgress();
-    }
+    const [status, setStatus] = useState('');
 
 
     const handleStoryUpload = async (e) =>{
         e.preventDefault();
 
-        if (!storyFile) return;
+        if (!storyFile) {
+            setStatus('Choose an image or video first.');
+            return;
+        }
+
+        setStatus('');
         
         const storageRef = ref(storage, uuidv4());
 
@@ -38,15 +37,15 @@ const CreateStory = () => {
             setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); 
         }, 
         (error) => {
-            console.log(error);
+            setUploadProgress();
+            setStatus('Upload failed. Please try again.');
         }, 
         () => {
             getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
-            console.log('File available at', downloadURL);
-
             try{
-                 
-                await socket.emit('create-new-story', {userId: localStorage.getItem('userId'), username: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: storyType, file: downloadURL, text: storyDescription});
+                const story = {userId: localStorage.getItem('userId'), username: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: storyType, file: downloadURL, text: storyDescription};
+                socket.emit('create-new-story', story);
+                window.dispatchEvent(new CustomEvent('story-created'));
                 setIsCreateStoryOpen(false);
                 setStoryDescription('');
                 setStoryFile(null);
@@ -54,7 +53,7 @@ const CreateStory = () => {
                 setUploadProgress();
 
             }catch(err){
-                console.log(err);
+                setStatus('Story could not be published.');
             }
 
 
@@ -72,7 +71,7 @@ const CreateStory = () => {
                 <hr className="createPostHr" />
                 
                 <div className="createPostBody">
-                    <form>
+                    <form onSubmit={handleStoryUpload}>
 
                     <select className="form-select" aria-label="Select Post Type" onChange={(e)=> setStoryType(e.target.value)}  >
                         <option defaultValue='photo'>Choose post type</option>
@@ -90,8 +89,9 @@ const CreateStory = () => {
                         {uploadProgress ?
                             <button disabled>Uploading... {Math.round(uploadProgress)}%</button>
                         :
-                        <button onClick={handleStoryUpload}>Upload</button>
+                        <button type="submit">Upload</button>
                         }
+                        {status && <p className="uploadStatus" role="status">{status}</p>}
                     </form>
                 </div>
             </div>

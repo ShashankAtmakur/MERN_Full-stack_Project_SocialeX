@@ -106,3 +106,22 @@
         width: 82vw;
     }
 }
+
+.notificationItem {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    padding: 0.75rem;
+    margin-bottom: 0.5rem;
+    border-radius: 0.6rem;
+    background: rgba(255, 255, 255, 0.45);
+}
+
+.notificationItem.unread {
+    border-left: 3px solid #168bd2;
+    background: rgba(225, 244, 255, 0.85);
+}
+
+.notificationItem small {
+    color: #667085;
+}

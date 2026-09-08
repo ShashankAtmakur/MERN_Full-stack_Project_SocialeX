@@ -19,45 +19,46 @@ const CreatePost = () => {
     const [postFile, setPostFile] = useState(null);
  
     const [uploadProgress, setUploadProgress] = useState();
-
-    if (uploadProgress === 100){
-        setPostDescription('');
-        setPostLocation('');
-        setPostFile(null);
-        setIsCreatePostOpen(false);
-        setUploadProgress();
-    }
+    const [status, setStatus] = useState('');
 
     const handlePostUplload = async (e) =>{
         e.preventDefault();
 
-        if (!postFile) return;
+        if (!postFile) {
+            setStatus('Choose an image or video first.');
+            return;
+        }
+
+        setStatus('');
         
         const storageRef = ref(storage, uuidv4());
 
         const uploadTask = uploadBytesResumable(storageRef, postFile);
 
-        uploadTask.on('state_changed', 
+        uploadTask.on('state_changed',
         (snapshot) => {
             setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); 
         }, 
         (error) => {
-            console.log(error);
+            setUploadProgress();
+            setStatus('Upload failed. Please try again.');
         }, 
         () => {
             getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
-            console.log('File available at', downloadURL);
-
             try{
-                const inputs = {userId: localStorage.getItem('userId'), userName: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: postType, file: downloadURL, description: postDescription, location: postLocation, comments:{"New user": "This is my forst comment"}}
-                await axios.post(`${API_URL}/createPost`, inputs)
-                .then( async (res)=>{
-                }).catch((err) =>{
-                    console.log(err);
-                });
+                const inputs = {userId: localStorage.getItem('userId'), userName: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: postType, file: downloadURL, description: postDescription, location: postLocation, comments: []};
+                const response = await axios.post(`${API_URL}/createPost`, inputs);
+                window.dispatchEvent(new CustomEvent('post-created', {detail: response.data}));
+                setPostDescription('');
+                setPostLocation('');
+                setPostFile(null);
+                setUploadProgress();
+                setStatus('Post published.');
+                setIsCreatePostOpen(false);
         
             }catch(err){
-                console.log(err);
+                setUploadProgress();
+                setStatus(err.response?.data?.error || 'Post could not be published.');
             }
 
 
@@ -80,7 +81,7 @@ const CreatePost = () => {
                 <hr className="createPostHr" />
                 
                 <div className="createPostBody">
-                    <form>
+                    <form onSubmit={handlePostUplload}>
 
                     <select className="form-select" aria-label="Select Post Type" onChange={(e)=> setPostType(e.target.value)}  >
                         <option defaultValue='photo'>Choose post type</option>
@@ -102,8 +103,9 @@ const CreatePost = () => {
                         {uploadProgress ?
                             <button disabled>Uploading... {Math.round(uploadProgress)}%</button>
                         :
-                        <button onClick={handlePostUplload}>Upload</button>
+                        <button type="submit">Upload</button>
                         }
+                        {status && <p className="uploadStatus" role="status">{status}</p>}
                     </form>
                 </div>
             </div>

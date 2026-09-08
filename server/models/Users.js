@@ -21,13 +21,27 @@ const userSchema = mongoose.Schema({
         type: String
     },
     posts: {
-        type: Array
+        type: Array,
+        default: []
     },
     followers: {
-        type: Array
+        type: Array,
+        default: []
     },
     following: {
-        type: Array
+        type: Array,
+        default: []
+    },
+    notifications: {
+        type: [{
+            type: { type: String, required: true },
+            message: { type: String, required: true },
+            actorId: String,
+            actorName: String,
+            createdAt: { type: Date, default: Date.now },
+            read: { type: Boolean, default: false }
+        }],
+        default: []
     }
 });
 

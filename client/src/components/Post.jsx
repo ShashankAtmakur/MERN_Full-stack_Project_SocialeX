@@ -22,6 +22,12 @@ const Post = () => {
     useEffect(() => {
         fetchPosts();
       }, []);
+
+            useEffect(() => {
+                const handlePostCreated = ({detail}) => setPosts((currentPosts) => [detail, ...currentPosts]);
+                window.addEventListener('post-created', handlePostCreated);
+                return () => window.removeEventListener('post-created', handlePostCreated);
+            }, []);
     
       const fetchPosts = async () => { 
         try {

@@ -22,6 +22,22 @@
     width: 35px;
     height: 35px;
 }
+
+.notificationButton {
+    position: relative;
+    display: inline-flex;
+}
+
+.notificationBadge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #e5484d;
+    border: 2px solid #f3f3f3;
+}
 .chatbtn{
     width: 31px;
     height: 31px;

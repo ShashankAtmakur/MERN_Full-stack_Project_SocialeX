@@ -118,3 +118,10 @@
         width: 82vw;
     }
 }
+
+.uploadStatus {
+    margin: 0;
+    color: rgba(8, 82, 147, 0.85);
+    font-size: 0.85rem;
+    text-align: center;
+}

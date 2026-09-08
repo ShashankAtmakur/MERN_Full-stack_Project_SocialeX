@@ -4,7 +4,39 @@ import Post from './models/Post.js'
 import Stories from './models/Stories.js';
 import User from './models/Users.js'
 
+const onlineUsers = new Map();
+
 const SocketHandler = (socket) => {
+  const notifyUser = async (recipientId, notification) => {
+    const user = await User.findByIdAndUpdate(
+      recipientId,
+      {$push: {notifications: {$each: [notification], $slice: -50}}},
+      {new: true}
+    );
+    const recipientSocket = onlineUsers.get(String(recipientId));
+    if (recipientSocket) {
+      recipientSocket.emit('notification-received', notification);
+    }
+  };
+
+  socket.on('register-user', (userId) => {
+    if (userId) onlineUsers.set(String(userId), socket);
+  });
+
+  socket.on('fetch-notifications', async ({userId}) => {
+    const user = await User.findById(userId, {notifications: 1});
+    socket.emit('notifications-fetched', {notifications: user?.notifications || []});
+  });
+
+  socket.on('mark-notifications-read', async ({userId}) => {
+    await User.updateOne({_id: userId}, {$set: {'notifications.$[].read': true}});
+  });
+
+  socket.on('disconnect', () => {
+    for (const [userId, userSocket] of onlineUsers.entries()) {
+      if (userSocket.id === socket.id) onlineUsers.delete(userId);
+    }
+  });
   
     socket.on('postLiked', async ({userId, postId}) =>{
         await Post.updateOne({_id: postId}, {$addToSet: {likes: userId}});
@@ -46,12 +78,22 @@ const SocketHandler = (socket) => {
     })
 
     socket.on('followUser', async({ownId, followingUserId})=>{
-        await User.updateOne({_id: ownId}, {$addToSet: {following: followingUserId}});
+        const followResult = await User.updateOne({_id: ownId}, {$addToSet: {following: followingUserId}});
         await User.updateOne({_id: followingUserId}, {$addToSet: {followers: ownId}});
 
         const user1 = await User.findOne({_id: ownId});
         const user2 = await User.findOne({_id: followingUserId});
         socket.emit('userFollowed', {following: user1.following});
+        if (followResult.modifiedCount > 0 && user1 && user2) {
+          await notifyUser(followingUserId, {
+            type: 'follow',
+            message: `${user1.username} started following you`,
+            actorId: String(user1._id),
+            actorName: user1.username,
+            createdAt: new Date(),
+            read: false
+          });
+        }
 
         if ( user2.following.includes(user1._id)   && user1.following.includes(user2._id) ){
             const newChat = new Chats({
@@ -162,8 +204,13 @@ const SocketHandler = (socket) => {
 
 
       socket.on('create-new-story', async({userId, username, userPic, fileType, file, text})=>{
-        const newStory = new Stories({userId, username, userPic, fileType, file, text});
-        await newStory.save();
+        try {
+            const newStory = new Stories({userId, username, userPic, fileType, file, text});
+            await newStory.save();
+            socket.emit('story-created', {story: newStory});
+        } catch (error) {
+            socket.emit('story-error', {message: 'Unable to publish story'});
+        }
       })
 
       socket.on('fetch-stories', async()=>{

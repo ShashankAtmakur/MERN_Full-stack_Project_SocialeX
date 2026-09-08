@@ -9,7 +9,7 @@ import { useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
 
-  const {isCreatPostOpen, setIsCreatePostOpen, setIsCreateStoryOpen, isNotificationsOpen, setNotificationsOpen} = useContext(GeneralContext);
+  const {isCreatPostOpen, setIsCreatePostOpen, setIsCreateStoryOpen, isNotificationsOpen, setNotificationsOpen, notifications} = useContext(GeneralContext);
 
   const navigate = useNavigate();
 
@@ -23,7 +23,10 @@ const Navbar = () => {
         <BiHomeAlt className="homebtn btns" onClick={()=> navigate('/')} />
         <BsChatSquareText  className="chatbtn btns" onClick={()=> navigate('/chat')} />
         <CgAddR className="createPostbtn btns" onClick={()=> {setIsCreatePostOpen(!isCreatPostOpen); setIsCreateStoryOpen(false)}} />
-        <TbNotification className="Notifybtn btns" onClick={()=> setNotificationsOpen(!isNotificationsOpen)}/>
+        <span className="notificationButton">
+          <TbNotification className="Notifybtn btns" onClick={()=> setNotificationsOpen(!isNotificationsOpen)} />
+          {notifications.some((notification) => !notification.read) && <span className="notificationBadge" aria-label="Unread notifications" />}
+        </span>
         <img className="profile" src={profilePic} alt="" onClick={()=> navigate(`/profile/${userId}`)} />
     </div>
 

@@ -23,6 +23,12 @@ const Stories = () => {
     useEffect(() => {
         fetchStories();
       }, []);
+
+            useEffect(() => {
+                const handleStoryCreated = () => fetchStories();
+                window.addEventListener('story-created', handleStoryCreated);
+                return () => window.removeEventListener('story-created', handleStoryCreated);
+            }, []);
     
       const fetchStories = async () => { 
         try {
