@@ -14,7 +14,7 @@ const CreateStory = () => {
     const [storyDescription, setStoryDescription] = useState('');
     const [storyFile, setStoryFile] = useState(null);
  
-    const [uploadProgress, setUploadProgress] = useState();
+    const [uploadProgress, setUploadProgress] = useState(null);
     const [status, setStatus] = useState('');
 
 
@@ -37,8 +37,8 @@ const CreateStory = () => {
             setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); 
         }, 
         (error) => {
-            setUploadProgress();
-            setStatus('Upload failed. Please try again.');
+            setUploadProgress(null);
+            setStatus(error.message || 'Upload failed. Please try again.');
         }, 
         () => {
             getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
@@ -50,7 +50,7 @@ const CreateStory = () => {
                 setStoryDescription('');
                 setStoryFile(null);
                 setIsCreateStoryOpen(false);
-                setUploadProgress();
+                setUploadProgress(null);
 
             }catch(err){
                 setStatus('Story could not be published.');
@@ -86,7 +86,7 @@ const CreateStory = () => {
                             <input type="text" className="form-control descriptionInput" id="floatingDescription" placeholder="Description" onChange={(e)=> setStoryDescription(e.target.value)} value={storyDescription}  /> 
                             <label htmlFor="floatingDescription">Text</label>
                         </div>
-                        {uploadProgress ?
+                        {uploadProgress !== null ?
                             <button disabled>Uploading... {Math.round(uploadProgress)}%</button>
                         :
                         <button type="submit">Upload</button>

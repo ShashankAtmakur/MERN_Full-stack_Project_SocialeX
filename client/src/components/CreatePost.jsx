@@ -18,7 +18,7 @@ const CreatePost = () => {
     const [postLocation, setPostLocation] = useState('');
     const [postFile, setPostFile] = useState(null);
  
-    const [uploadProgress, setUploadProgress] = useState();
+    const [uploadProgress, setUploadProgress] = useState(null);
     const [status, setStatus] = useState('');
 
     const handlePostUplload = async (e) =>{
@@ -33,6 +33,7 @@ const CreatePost = () => {
         
         const storageRef = ref(storage, uuidv4());
 
+        setUploadProgress(0);
         const uploadTask = uploadBytesResumable(storageRef, postFile);
 
         uploadTask.on('state_changed',
@@ -40,28 +41,23 @@ const CreatePost = () => {
             setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); 
         }, 
         (error) => {
-            setUploadProgress();
-            setStatus('Upload failed. Please try again.');
+            setUploadProgress(null);
+            setStatus(error.message || 'Upload failed. Please try again.');
         }, 
         () => {
-            getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
-            try{
+            getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
                 const inputs = {userId: localStorage.getItem('userId'), userName: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: postType, file: downloadURL, description: postDescription, location: postLocation, comments: []};
                 const response = await axios.post(`${API_URL}/createPost`, inputs);
                 window.dispatchEvent(new CustomEvent('post-created', {detail: response.data}));
                 setPostDescription('');
                 setPostLocation('');
                 setPostFile(null);
-                setUploadProgress();
+                setUploadProgress(null);
                 setStatus('Post published.');
                 setIsCreatePostOpen(false);
-        
-            }catch(err){
-                setUploadProgress();
-                setStatus(err.response?.data?.error || 'Post could not be published.');
-            }
-
-
+            }).catch((error) => {
+                setUploadProgress(null);
+                setStatus(error.response?.data?.error || error.message || 'Post could not be published.');
             });
         }
         );
@@ -100,7 +96,7 @@ const CreatePost = () => {
                             <input type="text" className="form-control  postLocation" id="floatingLocation" placeholder="Location" onChange={(e)=> setPostLocation(e.target.value)}  value={postLocation}  /> 
                             <label htmlFor="floatingLocation">Location</label>
                         </div>
-                        {uploadProgress ?
+                        {uploadProgress !== null ?
                             <button disabled>Uploading... {Math.round(uploadProgress)}%</button>
                         :
                         <button type="submit">Upload</button>
