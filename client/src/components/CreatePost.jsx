@@ -35,16 +35,25 @@ const CreatePost = () => {
 
         setUploadProgress(0);
         const uploadTask = uploadBytesResumable(storageRef, postFile);
+        const uploadTimeout = window.setTimeout(() => {
+            uploadTask.cancel();
+            setStatus('Upload timed out. Check Firebase Storage rules and your network connection.');
+        }, 30000);
 
         uploadTask.on('state_changed',
         (snapshot) => {
             setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); 
         }, 
         (error) => {
+            window.clearTimeout(uploadTimeout);
             setUploadProgress(null);
-            setStatus(error.message || 'Upload failed. Please try again.');
+            const message = error.code === 'storage/unauthorized'
+                ? 'Firebase Storage denied this upload. Enable sign-in or allow writes in Storage Rules.'
+                : error.message || 'Upload failed. Please try again.';
+            setStatus(message);
         }, 
         () => {
+            window.clearTimeout(uploadTimeout);
             getDownloadURL(uploadTask.snapshot.ref).then(async (downloadURL) => {
                 const inputs = {userId: localStorage.getItem('userId'), userName: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: postType, file: downloadURL, description: postDescription, location: postLocation, comments: []};
                 const response = await axios.post(`${API_URL}/createPost`, inputs);

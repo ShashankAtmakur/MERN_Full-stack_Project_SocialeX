@@ -30,17 +30,27 @@ const CreateStory = () => {
         
         const storageRef = ref(storage, uuidv4());
 
+        setUploadProgress(0);
         const uploadTask = uploadBytesResumable(storageRef, storyFile);
+        const uploadTimeout = window.setTimeout(() => {
+            uploadTask.cancel();
+            setStatus('Upload timed out. Check Firebase Storage rules and your network connection.');
+        }, 30000);
 
         uploadTask.on('state_changed', 
         (snapshot) => {
             setUploadProgress((snapshot.bytesTransferred / snapshot.totalBytes) * 100); 
         }, 
         (error) => {
+            window.clearTimeout(uploadTimeout);
             setUploadProgress(null);
-            setStatus(error.message || 'Upload failed. Please try again.');
+            const message = error.code === 'storage/unauthorized'
+                ? 'Firebase Storage denied this upload. Enable sign-in or allow writes in Storage Rules.'
+                : error.message || 'Upload failed. Please try again.';
+            setStatus(message);
         }, 
         () => {
+            window.clearTimeout(uploadTimeout);
             getDownloadURL(uploadTask.snapshot.ref).then( async (downloadURL) => {
             try{
                 const story = {userId: localStorage.getItem('userId'), username: localStorage.getItem('username'), userPic: localStorage.getItem('profilePic'), fileType: storyType, file: downloadURL, text: storyDescription};
